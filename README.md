@@ -31,5 +31,11 @@ Finally, you can run Shortnr like any other node.js app:
 
 If you would like to run Shortnr as a daemon on your server, take a look at [forever](https://github.com/nodejitsu/forever).
 
+### 6. Using Nginx as reverse proxy (optional)
+
+If you'd like to use Nginx as a reverse proxy for your Shortnr service, a sample configuration file is provided in extras/nginx.conf.
+
+Simply replace `3000` and `example.com` with your own values and place the file inside your nginx conf directory.
+
 #Configuration
 Further documentation on configuring the service can be found inside the `config.js` file which is throughly commented.
