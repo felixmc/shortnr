@@ -130,20 +130,14 @@ The service takes the following steps when a URL is submitted to be shortened:
 
 	1. Check the client limits to make sure the client is allowed to shorten a URL.
 		- An error message with status code 429 is returned if the client reached any of the limits specified in `config.js`.
-
 	2. Check to see if the URL is valid according to the `URL_PATTERN` property specified in `config.js`. If the URL is invalid, Shortnr will attempt to determine why in order to help the client:
-
 		2a. Check to see if request body contained properly formatted JSON.
 			- If not, the service returns an error 400 message telling the client what happened.
-
 		2b. Now assuming the requst body contained valid JSON, checks to see if the `url` property was defined.
 			- If not, the service returns an error 400 message telling the client what happened.
-
 		2c. Lastly, if the request body contained valid JSON and the `url` property was defined, Shortnr assumes the URL provided did not validate and returns an error 400 message telling the client what happened.
-
 	3. Check to see if the URL is too short to be shortened.
 		- If the URL is too short, an appropriate error 400 message telling the client what happened is returned.
-
 	4. Check to see if the URL has already been shortened in the past.
 		- If it has, return the existing short URL associated with the provided URL. This returns a response code 200.
 		- If it has not, a new unique URL code is generated and is returned to the client. This returns a response code 201.
