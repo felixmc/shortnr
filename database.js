@@ -1,3 +1,11 @@
+/**
+ * @author		Felix Milea-Ciobanu @felix_mc <felixmilea@gmail.com>
+ * @version		1.0
+ *
+ * @see <a href="https://github.com/felixmc/shortnr">GitHub Repository</a>
+ * @see <a href="http://fmc.io/">Example</a>
+ */
+
 var mysql = require( "mysql" ),
 	database,
 	tables,
