@@ -604,14 +604,14 @@ app.post( "/api/?", function( req, res )
 			// if the URL is valid
 			if ( url && url.match( config.URL_PATTERN ) )
 			{
-				// check to see if someone else already shortened that URL (@see database.js)
-				database.codeFromURL( url, function( code )
+				// if the URL is long enough to be shortened
+				if ( config.ALLOW_SHORT_URLS || ( !config.ALLOW_SHORT_URLS && isLongEnough( url ) ) )
 				{
-					// if the URL is not in the database
-					if ( code == undefined )
+					// check to see if someone else already shortened that URL (@see database.js)
+					database.codeFromURL( url, function( code )
 					{
-						// if the URL is long enough to be shortened
-						if ( config.ALLOW_SHORT_URLS || ( !config.ALLOW_SHORT_URLS && isLongEnough( url ) ) )
+						// if the URL is not in the database
+						if ( code == undefined )
 						{
 							// generate a unique URL code to be associated with this URL
 							uniqueCode( function( code )
@@ -622,7 +622,7 @@ app.post( "/api/?", function( req, res )
 
 									// return shortened URL to client
 									res.send( status, config.BASE_URL + newCode );
-					
+						
 									// log URL creation to console
 									log.info( "POST request to \"" + req.path + "\" - 201 Created: New URL shortened: " + ( config.BASE_URL + newCode ) );
 
@@ -632,38 +632,38 @@ app.post( "/api/?", function( req, res )
 							});
 						}
 
-						// else if URL was already shortened in the past
+						// else if someone else already shortened this link
 						else
 						{
-							status = 400;
-							var message = "Error 400: The submitted URL is already as short enough and would not benefit from shortening.";
+							status = 200;
+							
+							// return shortened URL to client
+							res.send( status, config.BASE_URL + code );
+							
+							// log URL creation to console				
+							log.info( "POST request to \"" + req.path + "\" - 200 OK: Already shortened URL returned: " + ( config.BASE_URL + code ) );
 
-							// send error to client
-							res.send( status, message );
-
-							// log error to console
-							log.warn( "POST request to \"" + req.path + "\" - " + message );
-
-							// log API request to database
-							database.logInsert( "", status, req.real_ip );
+							// log API request
+							database.logInsert( code, status, req.header("x-real-ip") );
 						}
-					}
+					});
+				}
+				
+				// else if URL was already short enough
+				else
+				{
+					status = 400;
+					var message = "Error 400: The submitted URL is already as short enough and would not benefit from shortening.";
 
-					// else if someone else already shortened this link
-					else
-					{
-						status = 200;
-						
-						// return shortened URL to client
-						res.send( status, config.BASE_URL + code );
-						
-						// log URL creation to console				
-						log.info( "POST request to \"" + req.path + "\" - 200 OK: Already shortened URL returned: " + ( config.BASE_URL + code ) );
+					// send error to client
+					res.send( status, message );
 
-						// log API request
-						database.logInsert( code, status, req.header("x-real-ip") );
-					}
-				});
+					// log error to console
+					log.warn( "POST request to \"" + req.path + "\" - " + message );
+
+					// log API request to database
+					database.logInsert( "", status, req.real_ip );
+				}
 			}
 
 			// if request body appeared to be blank
@@ -723,7 +723,7 @@ app.post( "/api/?", function( req, res )
 app.all( "*", function( req, res )
 {
 	// send error to client
-	res.send( 400, "Error 400: The request could not be fulfilled due to bad synthax. Please see the documentation on how to properly use this service's API'." );
+	res.send( 400, "Error 400: The request could not be fulfilled due to bad synthax. Please see the documentation on how to properly use this service's API." );
 
 	// log error to console
 	log.warn( "Error 400: Bad request to \"" + req.path + "\"" );
