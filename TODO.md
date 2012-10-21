@@ -1,0 +1,30 @@
+The following are things I would like to incorporate into future versions of Shortnr, in no particular order:
+
+- Provide the ability to customize character encoding for the static page as well as for HTTP responses in general.
+- Implement a revere-regex-like system for defining the length and allowed characters of an URL code.
+- Split up the code in app.js into multiple files in order to make the code more modular and easier to read/edit.
+- Improve support for the static front end.
+    - Maybe include a static file server for serving local files.
+- Restructure code for REST service so that it is more modular rather than a bunch of if statements.
+    - This should make the creation of new "response" paths neater and easier for a developer trying to customize the code for their needs.
+- More customizable and advanced limits system.
+    - More timeframes or customizable timeframes.
+- Client tracking for API usage beyond IP address (also goes along with improving limits system).
+    - Might include a client-id system where clients have to register first.
+- Ability for clients to request a specific URL code to be associated with their URL.
+    - So that if I wanted to I could register short.nr/felix to felixmc.com
+- URL code blacklist, maybe to avoid generating URL codes that might spell offensive words.
+    - This would be a must feature if the customizable URL codes feature gets implemented.
+- Ability for a shortnr server to manage multiple domains, possibly with multiple databases.
+    - For example, hel.lo/world and f.oo/world would link to different URLs despite having the same URL code "world".
+- Support for database systems other than MySQL.
+- Add IPv6 support for client tracking and analytics.
+- Add more comprehensive client filtering based on IP address, similar to Apache's mod_access
+- Ability to customize paths in REST service.
+    - For example, change the POST /api path to /add or something.
+- Ability to customize scope of the client filtering functionality on a path by path basis.
+- Implement blacklist/whitelist functionality for what domains can be shortened.
+    - Useful for preventive spam by blocking certain domains or even other URL shortening services to prevent double-shortening as a means to concel the final destination of the URL.
+- Provide more options for parsing the URL before being inserted into the database.
+    - Can include things like removing certain query strings or #'s
+- Ability to customize what gets logged in the database.
