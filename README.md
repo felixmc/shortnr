@@ -1,4 +1,24 @@
-# Support
+# About
+
+Shortnr is a node.js app for running a RESTful URL-shortening service. It is written in node.js and uses MySQL as it's database system.
+
+Shortnr provides an API that users can use to shorten URLs, redirect users accessing shortened URLs, view the redirect location of a shortened URL without going to it, and even view statistics about shortened URLs.
+
+It also keeps track of data about who is accessing the API, including analytics about people accessing shortened URLs and being redirected.
+
+One could use Shortnr to run their own URL-shortening service similar to bit.ly or tinyurl.com.
+
+### Features
+
+Beyond the basic features mentioned above, Shortnr also provides the following features:
+- Ability to set the length and characters from which to generate shortened URLs.
+- Ability to set limits on the amount of URL-shortening requests per client in a certain amount of time.
+- Ability to whitelist and/or blacklist clients by IP address, restricting who can access the API.
+	- Ability to customize the scope of the whitelist/blacklist functionality to only certain parts of the API.
+- Ability to specify a Regex pattern for filtering what URLs can be shortened.
+- Ability to proxy a static page to the root URL ("/") of the service.
+
+### Support
 
 If you need help or encounter any problems with Shortnr, shout out to [@felix_mc](http://twitter.com/#!/felix_mc) on Twitter.
 
@@ -125,20 +145,22 @@ A GET request to `/:urlCode` where `:urlCode` is a valid URL code as specified i
 ### Shortening URLs
 
 Links can be shortened through a POST request to `/api` or `/api/`. The body of the request must validate to JSON and must contain the `url` property which stores the URL to be shortened.
+
 The service takes the following steps when a URL is submitted to be shortened:
-	1. Check the client limits to make sure the client is allowed to shorten a URL.
-		- An error message with status code 429 is returned if the client reached any of the limits specified in `config.js`.
-	2. Check to see if the URL is valid according to the `URL_PATTERN` property specified in `config.js`. If the URL is invalid, Shortnr will attempt to determine why in order to help the client:
-		2a. Check to see if request body contained properly formatted JSON.
-			- If not, the service returns an error 400 message telling the client what happened.
-		2b. Now assuming the requst body contained valid JSON, checks to see if the `url` property was defined.
-			- If not, the service returns an error 400 message telling the client what happened.
-		2c. Lastly, if the request body contained valid JSON and the `url` property was defined, Shortnr assumes the URL provided did not validate and returns an error 400 message telling the client what happened.
-	3. Check to see if the URL is too short to be shortened.
-		- If the URL is too short, an appropriate error 400 message telling the client what happened is returned.
-	4. Check to see if the URL has already been shortened in the past.
-		- If it has, return the existing short URL associated with the provided URL. This returns a response code 200.
-		- If it has not, a new unique URL code is generated and is returned to the client. This returns a response code 201.
+
+1. Check the client limits to make sure the client is allowed to shorten a URL.
+	- An error message with status code 429 is returned if the client reached any of the limits specified in `config.js`.
+2. Check to see if the URL is valid according to the `URL_PATTERN` property specified in `config.js`. If the URL is invalid, Shortnr will attempt to determine why in order to help the client:
+	2a. Check to see if request body contained properly formatted JSON.
+		- If not, the service returns an error 400 message telling the client what happened.
+	2b. Now assuming the requst body contained valid JSON, checks to see if the `url` property was defined.
+		- If not, the service returns an error 400 message telling the client what happened.
+	2c. Lastly, if the request body contained valid JSON and the `url` property was defined, Shortnr assumes the URL provided did not validate and returns an error 400 message telling the client what happened.
+3. Check to see if the URL is too short to be shortened.
+	- If the URL is too short, an appropriate error 400 message telling the client what happened is returned.
+4. Check to see if the URL has already been shortened in the past.
+	- If it has, return the existing short URL associated with the provided URL. This returns a response code 200.
+	- If it has not, a new unique URL code is generated and is returned to the client. This returns a response code 201.
 
 Regardless of its outcome, this request is logged into the database under the specified `INSERT_LOG` table, along with the client's IP address.
 
@@ -148,17 +170,17 @@ As a way of helping users of the service fight spam, a translation service is pr
 
 A GET request to `/api/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return status code 200 and the associated URL in the response body if the URL code exists in the database, or a `404 not found` error if the URL code is not associated with any URL in the database. Regardless of its outcome, this request is logged into the database under the specified `VISIT_LOG` table, along with the client's IP address.
 
-### Accessing Statistics About URLs
+### Accessing Statistics
 
 A GET request to `/stats/` will return basic statistics about the current service in JSON format to the client. The statistics currently only contain the number of URLs shortened and the total number of redirects the service provided.
 
-A GET request to `/stats/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return status code 200 and the associated URL in the response body if the URL code exists in the database, or a `404 not found` error if the URL code is not associated with any URL in the database.
+A GET request to `/stats/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return status code 200 and the date of creation as well as the number of visits of the associated URL as JSON in the response body if the URL code exists in the database, or a `404 not found` error if the URL code is not associated with any URL in the database.
 
 Requests to the stats portion of the API are not logged in the database.
 
 ### Catch-All
 
-If the client's query did not match any of the above paths, it is returned a status code `400` page with the message "Error 400: The request could not be fulfilled due to bad synthax. Please see the documentation on how to properly use this service's API." These requests are not logged in the database.
+If the client's request did not match any of the above queries, it is returned a status code `400` page with the message "Error 400: The request could not be fulfilled due to bad synthax. Please see the documentation on how to properly use this service's API." These requests are not logged in the database.
 
 
 # License
