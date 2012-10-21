@@ -11,12 +11,12 @@ One could use Shortnr to run their own URL-shortening service similar to bit.ly 
 ### Features
 
 Beyond the basic features mentioned above, Shortnr also provides the following features:
-	- Ability to set the length and characters from which to generate shortened URLs.
-	- Ability to set limits on the amount of URL-shortening requests per client in a certain amount of time.
-	- Ability to whitelist and/or blacklist clients by IP address, restricting who can access the API.
-		- Ability to customize the scope of the whitelist/blacklist functionality to only certain parts of the API.
-	- Ability to specify a Regex pattern for filtering what URLs can be shortened.
-	- Ability to proxy a static page to the root URL ("/") of the service.
+- Ability to set the length and characters from which to generate shortened URLs.
+- Ability to set limits on the amount of URL-shortening requests per client in a certain amount of time.
+- Ability to whitelist and/or blacklist clients by IP address, restricting who can access the API.
+	- Ability to customize the scope of the whitelist/blacklist functionality to only certain parts of the API.
+- Ability to specify a Regex pattern for filtering what URLs can be shortened.
+- Ability to proxy a static page to the root URL ("/") of the service.
 
 ### Support
 
