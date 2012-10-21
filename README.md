@@ -114,6 +114,53 @@ For the purpose of this service, a client is someone using the API. Clients are 
 	- 3 => affects all requests to the service.
 
 
+# API
+
+The only way of interacting with Shortnr is through it's RESTful API.
+
+### URL Redirects
+
+A GET request to `/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return a `301 redirect` to the matching URL in the database, or a `404 not found` error if the URL code is not associated with any URL in the database. Regardless of its outcome, this request is logged into the database under the specified `VISIT_LOG` table, along with the client's IP address, user agent, and HTTP referer.
+
+### Shortening URLs
+
+Links can be shortened through a POST request to `/api` or `/api/`. The body of the request must validate to JSON and must contain the `url` property which stores the URL to be shortened.
+The service takes the following steps when a URL is submitted to be shortened:
+	1. Check the client limits to make sure the client is allowed to shorten a URL.
+		- An error message with status code 429 is returned if the client reached any of the limits specified in `config.js`.
+	2. Check to see if the URL is valid according to the `URL_PATTERN` property specified in `config.js`. If the URL is invalid, Shortnr will attempt to determine why in order to help the client:
+		2a. Check to see if request body contained properly formatted JSON.
+			- If not, the service returns an error 400 message telling the client what happened.
+		2b. Now assuming the requst body contained valid JSON, checks to see if the `url` property was defined.
+			- If not, the service returns an error 400 message telling the client what happened.
+		2c. Lastly, if the request body contained valid JSON and the `url` property was defined, Shortnr assumes the URL provided did not validate and returns an error 400 message telling the client what happened.
+	3. Check to see if the URL is too short to be shortened.
+		- If the URL is too short, an appropriate error 400 message telling the client what happened is returned.
+	4. Check to see if the URL has already been shortened in the past.
+		- If it has, return the existing short URL associated with the provided URL. This returns a response code 200.
+		- If it has not, a new unique URL code is generated and is returned to the client. This returns a response code 201.
+
+Regardless of its outcome, this request is logged into the database under the specified `INSERT_LOG` table, along with the client's IP address.
+
+### Translating URLs
+
+As a way of helping users of the service fight spam, a translation service is provided that will return the associated URL from a given URL code without redirecting the user's browser.
+
+A GET request to `/api/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return status code 200 and the associated URL in the response body if the URL code exists in the database, or a `404 not found` error if the URL code is not associated with any URL in the database. Regardless of its outcome, this request is logged into the database under the specified `VISIT_LOG` table, along with the client's IP address.
+
+### Accessing Statistics About URLs
+
+A GET request to `/stats/` will return basic statistics about the current service in JSON format to the client. The statistics currently only contain the number of URLs shortened and the total number of redirects the service provided.
+
+A GET request to `/stats/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return status code 200 and the associated URL in the response body if the URL code exists in the database, or a `404 not found` error if the URL code is not associated with any URL in the database.
+
+Requests to the stats portion of the API are not logged in the database.
+
+### Catch-All
+
+If the client's query did not match any of the above paths, it is returned a status code `400` page with the message "Error 400: The request could not be fulfilled due to bad synthax. Please see the documentation on how to properly use this service's API." These requests are not logged in the database.
+
+
 # License
 
 Shortnr uses the MIT License. Take a look at LICENSE for more info.
