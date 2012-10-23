@@ -150,13 +150,15 @@ For the purpose of this service, a client is someone using the API. Clients are 
 
 
 
+# URL Redirecting Functionality
+
+A GET request to `/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return a `301 redirect` to the matching URL in the database, or a `404 not found` error if the URL code is not associated with any URL in the database. Regardless of its outcome, this request is logged into the database under the specified `VISIT_LOG` table, along with the client's IP address, user agent, and HTTP referrer.
+
+
+
 # API
 
 The only way of interacting with Shortnr is through it's RESTful API.
-
-### URL Redirects
-
-A GET request to `/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return a `301 redirect` to the matching URL in the database, or a `404 not found` error if the URL code is not associated with any URL in the database. Regardless of its outcome, this request is logged into the database under the specified `VISIT_LOG` table, along with the client's IP address, user agent, and HTTP referrer.
 
 ### Shortening URLs
 
