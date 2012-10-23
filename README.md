@@ -162,7 +162,7 @@ The only way of interacting with Shortnr is through it's RESTful API.
 
 ### Shortening URLs
 
-Links can be shortened through a POST request to `/api` or `/api/`. The body of the request must validate to JSON and must contain the `url` property which stores the URL to be shortened.
+Links can be shortened through a POST request to `/api` or `/api/`. The body of the request must validate to JSON and must contain the `url` property which holds the URL to be shortened.
 
 The service takes the following steps when a URL is submitted to be shortened:
 
