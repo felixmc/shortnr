@@ -255,7 +255,7 @@ This table logs translation queries, which are GET requests made to `/api`. This
 The following is the SQL structure of the table:
 
 	`query_id` int(11) NOT NULL AUTO_INCREMENT,
-	`url_code` varchar(5) NOT NULL,
+	`url_code` varchar( CODE_LENGTH ) NOT NULL,
 	`response` enum('200','404') NOT NULL,
 	`ip_address` varchar(15) NOT NULL,
 	`timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
