@@ -10,17 +10,28 @@ One could use Shortnr to run their own URL-shortening service similar to bit.ly 
 
 ### Features
 
-Beyond the basic features mentioned above, Shortnr also provides the following features:
+- RESTful API for inserting, translating, retrieving statistics about URLs.
+- Written in node.js and MySQL for speed and scalability.
+- Ability to specify a Regex pattern for filtering what URLs can be shortened.
+- Handles URL duplicates and only stores a URL in the database once, even if multiple people attempt to shorten it.
+- Ability to proxy a static page to the root URL ("/") of the service.
 - Ability to set the length and characters from which to generate shortened URLs.
 - Ability to set limits on the amount of URL-shortening requests per client in a certain amount of time.
 - Ability to whitelist and/or blacklist clients by IP address, restricting who can access the API.
 	- Ability to customize the scope of the whitelist/blacklist functionality to only certain parts of the API.
-- Ability to specify a Regex pattern for filtering what URLs can be shortened.
-- Ability to proxy a static page to the root URL ("/") of the service.
+
+
+### Background
+
+I started this project during break for college just for fun and to give me something to do. I knew I wanted to do something with node.js, and was also interested into learning more about how HTTP works, so I thought a RESTful service would be a great project.
+
+While this project turned out into a pretty great learning experience for me, and though I've been messing around in node.js for a while now, I learned node.js in a very informal setting, so there are bound to be things in my code that are not standard practice or perhaps not the best method of accomplishing something. As such, if you are a more experience node.js developer and happen to take a look at the source, I would very much appreciate any feedback.
 
 ### Support
 
 If you need help or encounter any problems with Shortnr, shout out to [@felix_mc](http://twitter.com/#!/felix_mc) on Twitter.
+
+
 
 # Installation
 
@@ -60,6 +71,7 @@ If you would like to run Shortnr as a daemon on your server, take a look at [for
 If you'd like to use Nginx as a reverse proxy for your Shortnr service, a sample configuration file is provided in extras/nginx.conf.
 
 Simply replace `3000` and `example.com` with your own values and place the file inside your nginx conf directory.
+
 
 
 # Configuration
@@ -134,13 +146,14 @@ For the purpose of this service, a client is someone using the API. Clients are 
 	- 3 => affects all requests to the service.
 
 
+
 # API
 
 The only way of interacting with Shortnr is through it's RESTful API.
 
 ### URL Redirects
 
-A GET request to `/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return a `301 redirect` to the matching URL in the database, or a `404 not found` error if the URL code is not associated with any URL in the database. Regardless of its outcome, this request is logged into the database under the specified `VISIT_LOG` table, along with the client's IP address, user agent, and HTTP referer.
+A GET request to `/:urlCode` where `:urlCode` is a valid URL code as specified in `config.js` will return a `301 redirect` to the matching URL in the database, or a `404 not found` error if the URL code is not associated with any URL in the database. Regardless of its outcome, this request is logged into the database under the specified `VISIT_LOG` table, along with the client's IP address, user agent, and HTTP referrer.
 
 ### Shortening URLs
 
@@ -153,7 +166,7 @@ The service takes the following steps when a URL is submitted to be shortened:
 2. Check to see if the URL is valid according to the `URL_PATTERN` property specified in `config.js`. If the URL is invalid, Shortnr will attempt to determine why in order to help the client:
 	2a. Check to see if request body contained properly formatted JSON.
 		- If not, the service returns an error 400 message telling the client what happened.
-	2b. Now assuming the requst body contained valid JSON, checks to see if the `url` property was defined.
+	2b. Now assuming the request body contained valid JSON, checks to see if the `url` property was defined.
 		- If not, the service returns an error 400 message telling the client what happened.
 	2c. Lastly, if the request body contained valid JSON and the `url` property was defined, Shortnr assumes the URL provided did not validate and returns an error 400 message telling the client what happened.
 3. Check to see if the URL is too short to be shortened.
@@ -183,9 +196,78 @@ Requests to the stats portion of the API are not logged in the database.
 If the client's request did not match any of the above queries, it is returned a status code `400` page with the message "Error 400: The request could not be fulfilled due to bad synthax. Please see the documentation on how to properly use this service's API." These requests are not logged in the database.
 
 
+
+# Database Table Structure
+Shortnr uses 4 different database tables to store the data it needs in order to function, as well as analytics about its usage. The sections below are based on the default table names as specified in `config.js`.
+
+### urls
+
+This table stores URLs and their associated URL code. It is mainly used to respond to redirects and translation queries. It also stores the IP address of the client who _first_ shortened that URL and a timestamp of when the URL was _first_ shortened.
+
+The following is the SQL structure of the table:
+
+	`url_code` varchar( CODE_LENGTH ) NOT NULL,
+	`long_url` varchar(512) NOT NULL,
+	`ip_address` varchar(15) NOT NULL,
+	`timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE KEY `url_code` (`url_code`),
+	KEY `ip_address` (`ip_address`)
+
+Where `CODE_LENGTH` is a positive integer value representing the length of the URL code as specified in `config.js`.
+
+### insertLog
+
+This table logs all (both successful and unsuccessful) POST requests made to `/api`. This data is used for rate limiting, but could also be used for analytics in terms of analyzing the virality of certain URLs by looking at how many separate times a URL was submitted for shortening, especially over a specific time frame. This table stores the URL code returned to the client, assuming their query was successful; it also stores the HTTP response code returned to the client (`201` if URL was new, `200` if it already existed, and `400` if the request was unsuccessful due to invalid formatting of either the request or URL), the IP address of the client, and a timestamp of when the request was made.
+
+The following is the SQL structure of the table:
+
+	`request_id` int(11) NOT NULL AUTO_INCREMENT,
+	`url_code` varchar( CODE_LENGTH ) NOT NULL,
+	`response` enum('200','201','400') NOT NULL,
+	`ip_address` varchar(15) NOT NULL,
+	`timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`request_id`),
+	KEY `url_code` (`url_code`,`response`,`ip_address`)
+
+Where `CODE_LENGTH` is a positive integer value representing the length of the URL code as specified in `config.js`.
+
+### visitLog
+
+This table logs "visits" to shortened URLs that the service redirects. The table stores the URL code that the user accessed, the HTTP response code returned by the service (`301` if user was redirected, and `404` if user accessed a code that's not associated with an URL), the IP address of the user (useful if run though a Geolocation service for identifying the physical location of the service's users), the user's user-agent string (aka web browser or HTTP client), the referrer, and a timestamp of when the user accessed the URL.
+
+The following is the SQL structure of the table:
+
+	`visit_id` int(11) NOT NULL AUTO_INCREMENT,
+	`url_code` varchar( CODE_LENGTH ) NOT NULL,
+	`response` enum('301','404') NOT NULL,
+	`ip_address` varchar(15) NOT NULL,
+	`user_agent` varchar(512) NOT NULL,
+	`referral` varchar(512) NOT NULL,
+	`timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`visit_id`)
+
+Where `CODE_LENGTH` is a positive integer value representing the length of the URL code as specified in `config.js`.
+
+### translateLog
+
+This table logs translation queries, which are GET requests made to `/api`. This table is not necessary for the service to function, but it could potentially provide some useful data about which URLs users seem to mistrust and might contain spam. The table stores the URL code the user attempted to translate, the HTTP response code returned by the service (`200` if the request was successful, and `404` if user accessed a code that's not associated with an URL), the user's IP address, and a timestamp of when the query was made.
+
+The following is the SQL structure of the table:
+
+	`query_id` int(11) NOT NULL AUTO_INCREMENT,
+	`url_code` varchar(5) NOT NULL,
+	`response` enum('200','404') NOT NULL,
+	`ip_address` varchar(15) NOT NULL,
+	`timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`query_id`),
+	KEY `query` (`url_code`,`response`)
+
+Where `CODE_LENGTH` is a positive integer value representing the length of the URL code as specified in `config.js`.
+
 # License
 
-Shortnr uses the MIT License. Take a look at LICENSE for more info.
+Shortnr uses the MIT License. Take a look at LICENSE for the actual text of the license.
+
 
 
 # Todos
