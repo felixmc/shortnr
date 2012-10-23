@@ -31,6 +31,9 @@ While this project turned out into a pretty great learning experience for me, an
 
 If you need help or encounter any problems with Shortnr, shout out to [@felix_mc](http://twitter.com/#!/felix_mc) on Twitter.
 
+### Examples
+
+If you'd like to test out Shortnr before installing it on your server, check out [fmc.io](http://fmc.io/).
 
 
 # Installation
