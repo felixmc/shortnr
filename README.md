@@ -1,3 +1,5 @@
+If you'd like to test out Shortnr before installing it on your server, check out [fmc.io](http://fmc.io/).
+
 # About
 
 Shortnr is a node.js app for running a RESTful URL-shortening service. It is written in node.js and uses MySQL as it's database system.
@@ -31,9 +33,6 @@ While this project turned out into a pretty great learning experience for me, an
 
 If you need help or encounter any problems with Shortnr, shout out to [@felix_mc](http://twitter.com/#!/felix_mc) on Twitter.
 
-### Examples
-
-If you'd like to test out Shortnr before installing it on your server, check out [fmc.io](http://fmc.io/).
 
 
 # Installation
