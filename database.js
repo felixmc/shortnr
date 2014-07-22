@@ -6,6 +6,8 @@
  * @see <a href="http://fmc.io/">Example</a>
  */
 
+var jsesc = require("jsesc");
+
 var mysql = require( "mysql" ),
 	database,
 	tables,
@@ -36,7 +38,7 @@ exports.connect = function( config, _log )
  */
 exports.URLFromCode = function( urlCode, callback )
 {
-	var query = "SELECT `long_url` FROM `" + tables.URLS + "` WHERE `url_code` = '" + urlCode + "'";
+	var query = "SELECT `long_url` FROM `" + tables.URLS + "` WHERE `url_code` = '" + jsesc(urlCode) + "'";
 
 	database.query( query, function( error, rows )
 	{
@@ -63,7 +65,7 @@ exports.URLFromCode = function( urlCode, callback )
  */
 exports.codeFromURL = function( url, callback )
 {
-	var query = "SELECT `url_code` FROM `" + tables.URLS + "` WHERE `long_url` = '" + url + "'";
+	var query = "SELECT `url_code` FROM `" + tables.URLS + "` WHERE `long_url` = '" + jsesc(url) + "'";
 
 	database.query( query, function( error, rows )
 	{
@@ -89,7 +91,7 @@ exports.codeFromURL = function( url, callback )
  */
 exports.getURLDate = function( urlCode, callback )
 {
-	var query = "SELECT `timestamp` FROM `" + tables.URLS + "` WHERE `url_code` = '" + urlCode + "'";
+	var query = "SELECT `timestamp` FROM `" + tables.URLS + "` WHERE `url_code` = '" + jsesc(urlCode) + "'";
 
 	database.query( query, function( error, date )
 	{
@@ -168,7 +170,7 @@ exports.getTotalVisits = function( callback )
  */
 exports.getURLVisits = function( urlCode, callback )
 {
-	var query = "SELECT COUNT(*) FROM `" + tables.VISIT_LOG + "` WHERE `response` = '301' AND `url_code` = '" + urlCode + "'";
+	var query = "SELECT COUNT(*) FROM `" + tables.VISIT_LOG + "` WHERE `response` = '301' AND `url_code` = '" + jsesc(urlCode) + "'";
 
 	database.query( query, function( error, count )
 	{
@@ -194,7 +196,7 @@ exports.getURLVisits = function( urlCode, callback )
  */
 exports.insertURL = function( code, url, ipAddress, callback )
 {
-	var query = "INSERT INTO `" + tables.URLS + "`( `url_code`, `long_url`, `ip_address` ) VALUES ( '" + code + "', '" + url + "', '" + ipAddress + "' )";
+	var query = "INSERT INTO `" + tables.URLS + "`( `url_code`, `long_url`, `ip_address` ) VALUES ( '" + jsesc(code) + "', '" + jsesc(url) + "', '" + jsesc(ipAddress) + "' )";
 
 	database.query( query, function( error )
 	{
@@ -220,7 +222,7 @@ exports.insertURL = function( code, url, ipAddress, callback )
  */
 exports.logVisit = function( urlCode, status, request, callback )
 {
-	var query = "INSERT INTO `" + tables.VISIT_LOG + "` ( `url_code`, `response`, `ip_address`, `user_agent`, `referral` ) VALUES ( '" + urlCode + "', '" + status + "', '" + request.real_ip + "', '" + request.get("user-agent") + "', '" + request.get("referrer") + "' )";
+	var query = "INSERT INTO `" + tables.VISIT_LOG + "` ( `url_code`, `response`, `ip_address`, `user_agent`, `referral` ) VALUES ( '" + jsesc(urlCode) + "', '" + jsesc(status) + "', '" + request.real_ip + "', '" + jsesc(request.get("user-agent")) + "', '" + request.get("referrer") + "' )";
 
 	database.query( query, function( error )
 	{
@@ -246,7 +248,7 @@ exports.logVisit = function( urlCode, status, request, callback )
  */
 exports.logInsert = function( code, status, ipAddress, callback )
 {
-	var query = "INSERT INTO `" + tables.INSERT_LOG + "`( `url_code`, `response`, `ip_address` ) VALUES ( '" + code + "', '" + status + "', '" + ipAddress + "' )";
+	var query = "INSERT INTO `" + tables.INSERT_LOG + "`( `url_code`, `response`, `ip_address` ) VALUES ( '" + jsesc(code) + "', '" + jsesc(status) + "', '" + jsesc(ipAddress) + "' )";
 
 	database.query( query, function( error )
 	{
@@ -272,7 +274,7 @@ exports.logInsert = function( code, status, ipAddress, callback )
  */
 exports.logTranslate = function( urlCode, status, ipAddress, callback )
 {
-	var query = "INSERT INTO `" + tables.TRANSLATE_LOG + "` ( `url_code`, `response`, `ip_address` ) VALUES ( '" + urlCode + "', '" + status + "', '" + ipAddress + "' )";
+	var query = "INSERT INTO `" + tables.TRANSLATE_LOG + "` ( `url_code`, `response`, `ip_address` ) VALUES ( '" + jsesc(urlCode) + "', '" + jsesc(status) + "', '" + jsesc(ipAddress) + "' )";
 
 	database.query( query, function( error )
 	{
@@ -310,7 +312,7 @@ exports.clientHistory = function( ipAddress, strict, callback )
 		strictQuery = "AND ( `response` = '200' OR `response` = '201' )";
 	}
 
-	var query = "SELECT `timestamp` FROM `" + tables.INSERT_LOG + "` WHERE `ip_address` = '" + ipAddress + "'" + strictQuery + " AND `timestamp` > DATE_SUB( NOW(), INTERVAL 24 HOUR)";
+	var query = "SELECT `timestamp` FROM `" + tables.INSERT_LOG + "` WHERE `ip_address` = '" + jsesc(ipAddress) + "'" + jsesc(strictQuery) + " AND `timestamp` > DATE_SUB( NOW(), INTERVAL 24 HOUR)";
 
 	// setup object to be returned via the callback
 	var history = { day : 0, hour: 0, minute: 0 };

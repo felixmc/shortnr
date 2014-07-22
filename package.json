@@ -17,6 +17,7 @@
 		"express": "3.0.0rc5",
 		"express-params": "0.0.3",
 		"mysql": "2.0.0-alpha3",
-		"custom-logger": "0.2.1"
+		"custom-logger": "0.2.1",
+		"jsesc": "0.4.3"
 	}
 }
