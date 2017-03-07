@@ -312,7 +312,7 @@ exports.clientHistory = function( ipAddress, strict, callback )
 		strictQuery = "AND ( `response` = '200' OR `response` = '201' )";
 	}
 
-	var query = "SELECT `timestamp` FROM `" + tables.INSERT_LOG + "` WHERE `ip_address` = '" + jsesc(ipAddress) + "'" + jsesc(strictQuery) + " AND `timestamp` > DATE_SUB( NOW(), INTERVAL 24 HOUR)";
+	var query = "SELECT `timestamp` FROM `" + tables.INSERT_LOG + "` WHERE `ip_address` = '" + jsesc(ipAddress) + "'" + strictQuery + " AND `timestamp` > DATE_SUB( NOW(), INTERVAL 24 HOUR)";
 
 	// setup object to be returned via the callback
 	var history = { day : 0, hour: 0, minute: 0 };
