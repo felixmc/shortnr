@@ -56,7 +56,7 @@ Make sure that you already created the MySQL database you plan on using with Sho
 
 The following will create the appropriate tables in your database based on your configuration. 
 
-	npm db_config
+	node db_config
 
 If you change the "CODE_LENGTH" parameter of your configuration, you will need to run this again. Doing so might delete any data you had stored in your Shortnr database.
 
